@@ -63,6 +63,30 @@ public class ProgramEvaluatorVisitor extends ProgramVisitor {
             args -> { float arg1 = args.get(0).floatValue();
                 float arg2 = args.get(1).floatValue();
                 return arg1 * arg2; };
+    // div
+    private Function<List<Number>,Number> divint =
+            args -> { int arg1 = args.get(0).intValue();
+                      int arg2 = args.get(1).intValue();
+                      if (arg2 == 0) throw new ArithmeticException("Division by zero");
+                      return arg1 / arg2; };
+
+    private Function<List<Number>,Number> divfloat =
+            args -> { float arg1 = args.get(0).floatValue();
+                      float arg2 = args.get(1).floatValue();
+                      if (arg2 == 0) throw new ArithmeticException("Division by zero");
+                      return arg1 / arg2; };
+    // mod
+    private Function<List<Number>,Number> modint =
+            args -> { int arg1 = args.get(0).intValue();
+                      int arg2 = args.get(1).intValue();
+                      if (arg2 == 0) throw new ArithmeticException("Modulo by zero");
+                      return arg1 % arg2; };
+
+    private Function<List<Number>,Number> modfloat =
+            args -> { float arg1 = args.get(0).floatValue();
+                      float arg2 = args.get(1).floatValue();
+                      if (arg2 == 0) throw new ArithmeticException("Modulo by zero");
+                      return arg1 % arg2; };
 
     final private Map<Operator, Map<Type, Function<List<Number>,Number>>> operatorFunctions = Map.ofEntries(
             // UNARIES
@@ -86,6 +110,16 @@ public class ProgramEvaluatorVisitor extends ProgramVisitor {
             entry(MULT, Map.ofEntries(
                     entry(INT, multint),
                     entry(FLOAT, multfloat ) )
+            ),
+            // div
+            entry(DIV, Map.ofEntries(
+                    entry(INT, divint),
+                    entry(FLOAT, divfloat ) )
+            ),
+            // mod
+            entry(MOD, Map.ofEntries(
+                    entry(INT, modint),
+                    entry(FLOAT, modfloat ) )
             ));
 
     public ProgramEvaluatorVisitor(ProgramTypeVisitor pv) {
