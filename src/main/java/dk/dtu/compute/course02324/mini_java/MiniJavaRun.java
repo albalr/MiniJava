@@ -182,9 +182,9 @@ public class MiniJavaRun {
 
         printTypeEvaluate(statement5);
 
-        System.out.println("And now some syntactially wrong examples (crashing) when building statement!");
+        System.out.println("And now some syntactically wrong examples (crashing) when building statement!");
 
-        Statement statement6 = new Sequence(
+        /*Statement statement6 = new Sequence(
                 new Declaration(INT, new Var("i")),
                 new Declaration(
                         INT,
@@ -200,7 +200,52 @@ public class MiniJavaRun {
                                         new FloatLiteral(3.5f)
                                         ))
                 )
+        );*/
+
+        System.out.println("Test: (4 * 5) - 6");
+
+        Statement statement7 = Sequence(
+                Declaration(INT, Var("result"),
+                        OperatorExpression(
+                                MINUS2,
+                                OperatorExpression(MULT,
+                                        new IntLiteral(4),
+                                        new IntLiteral(5)
+                                ),
+                                new IntLiteral(6)
+                        )
+                )
         );
+
+        printTypeEvaluate(statement7);
+
+        System.out.println("Test: Unary +5 and -3.2f");
+
+        Statement statement8 = Sequence(
+                Declaration(INT, Var("a"), OperatorExpression(PLUS1, new IntLiteral(5))),
+                Declaration(FLOAT, Var("b"), OperatorExpression(MINUS1, new FloatLiteral(3.2f)))
+        );
+
+        printTypeEvaluate(statement8);
+
+
+        Statement statement9 = Sequence(
+                Declaration(INT, Var("x"), OperatorExpression(DIV, new IntLiteral(10), new IntLiteral(2))),
+                Declaration(FLOAT, Var("y"), OperatorExpression(MOD, new FloatLiteral(5.5f), new FloatLiteral(2f)))
+        );
+        printTypeEvaluate(statement9);
+
+        System.out.println("Test: PrintStatement");
+
+        Statement statement10 = Sequence(
+                Declaration(INT, Var("z"), new IntLiteral(42)),
+                new PrintStatement("The answer is: ", Var("z"))
+        );
+
+        printTypeEvaluate(statement10);
+
+
+
     }
 
 }

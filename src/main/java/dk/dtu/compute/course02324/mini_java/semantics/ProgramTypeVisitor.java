@@ -18,7 +18,9 @@ public class ProgramTypeVisitor extends ProgramVisitor {
     final private Map<Operator,List<Type>> operatorTypes = Map.ofEntries(
             entry(PLUS2, List.of(INT, FLOAT)),
             entry(MINUS2, List.of(INT, FLOAT)),
-            entry(MULT, List.of(INT, FLOAT)));
+            entry(MULT, List.of(INT, FLOAT)),
+            entry(DIV, List.of(INT, FLOAT)),
+            entry(MOD, List.of(INT, FLOAT)));
 
     final public Map<Expression, Type> typeMapping = new HashMap<>();
 
@@ -119,5 +121,14 @@ public class ProgramTypeVisitor extends ProgramVisitor {
             problems.add("Expressions does not have a type: Operator " + operatorExpression.operator);
         }
     }
+
+    @Override
+    public void visit(PrintStatement printStatement) {
+        Type type = typeMapping.get(printStatement.expression);
+        if (type == null) {
+            problems.add("Expression in println statement has no type.");
+        }
+    }
+
 
 }

@@ -33,22 +33,90 @@ public class ProgramEvaluatorVisitor extends ProgramVisitor {
                       float arg2 = args.get(1).floatValue();
                       return arg1 - arg2; };
 
+    private Function<List<Number>,Number> minus2int =
+            args -> {
+                int arg1 = args.get(0).intValue();
+                int arg2 = args.get(1).intValue();
+                return arg1 - arg2;
+            };
     private Function<List<Number>,Number> multfloat =
             args -> { float arg1 = args.get(0).floatValue();
                 float arg2 = args.get(1).floatValue();
                 return arg1 * arg2; };
 
+    private Function<List<Number>,Number> multint =
+            args -> {
+                int arg1 = args.get(0).intValue();
+                int arg2 = args.get(1).intValue();
+                return arg1 * arg2;
+            };
+
+    private Function<List<Number>,Number> divfloat =
+            args -> { float arg1 = args.get(0).floatValue();
+                float arg2 = args.get(1).floatValue();
+                return arg1 / arg2; };
+
+    private Function<List<Number>,Number> divint =
+            args -> {
+                int arg1 = args.get(0).intValue();
+                int arg2 = args.get(1).intValue();
+                return arg1 / arg2;
+            };
+
+    private Function<List<Number>,Number> modfloat =
+            args -> { float arg1 = args.get(0).floatValue();
+                float arg2 = args.get(1).floatValue();
+                return arg1 % arg2; };
+
+    private Function<List<Number>,Number> modint =
+            args -> {
+                int arg1 = args.get(0).intValue();
+                int arg2 = args.get(1).intValue();
+                return arg1 % arg2;
+            };
+
+    private Function<List<Number>,Number> plusint =
+            args -> {
+                int arg1 = args.get(0).intValue();
+                return arg1 + 1;
+            };
+
+    private Function<List<Number>,Number> minusint =
+            args -> {
+                int arg1 = args.get(0).intValue();
+                return arg1 - 1;
+            };
+
     final private Map<Operator, Map<Type, Function<List<Number>,Number>>> operatorFunctions = Map.ofEntries(
+            entry(PLUS1, Map.ofEntries(
+                    entry(INT, plusint),
+                    entry(FLOAT, plusint))
+            ),
             entry(PLUS2, Map.ofEntries(
-                    entry(INT, plus2int ),
-                    entry(FLOAT, plus2float ) )
+                    entry(INT, plus2int),
+                    entry(FLOAT, plus2float))
+            ),
+            entry(MINUS1, Map.ofEntries(
+                    entry(INT, minusint),
+                    entry(FLOAT, minusint))
             ),
             entry(MINUS2, Map.ofEntries(
-                    entry(FLOAT, minus2float ) )
+                    entry(INT, minus2int),
+                    entry(FLOAT, minus2float))
             ),
             entry(MULT, Map.ofEntries(
-                    entry(FLOAT, multfloat ) )
-            ));
+                    entry(INT, multint),
+                    entry(FLOAT, multfloat))
+            ),
+            entry(DIV, Map.ofEntries(
+                    entry(INT, divint),
+                    entry(FLOAT, divfloat))
+            ),
+            entry(MOD, Map.ofEntries(
+                    entry(INT, modint),
+                    entry(FLOAT, modfloat))
+            )
+    );
 
     public ProgramEvaluatorVisitor(ProgramTypeVisitor pv) {
         this.pv = pv;
@@ -115,6 +183,17 @@ public class ProgramEvaluatorVisitor extends ProgramVisitor {
         Number result = function.apply(args);
         values.put(operatorExpression, result);
     }
+
+    @Override
+    public void visit(PrintStatement printStatement) {
+        Number result = values.get(printStatement.expression);
+        if (result != null) {
+            System.out.println(printStatement.text + result);
+        } else {
+            System.out.println(printStatement.text + "<undefined>");
+        }
+    }
+
 
 
 }
