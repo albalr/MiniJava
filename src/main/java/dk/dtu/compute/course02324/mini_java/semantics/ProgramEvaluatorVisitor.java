@@ -107,6 +107,7 @@ public class ProgramEvaluatorVisitor extends ProgramVisitor {
                     entry(INT, minus2int),
                     entry(FLOAT, minus2float ) )
             ),
+            // mult
             entry(MULT, Map.ofEntries(
                     entry(INT, multint),
                     entry(FLOAT, multfloat ) )

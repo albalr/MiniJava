@@ -226,6 +226,46 @@ public class MiniJavaRun {
                 )
         );
         printTypeEvaluate(statement7);
+
+        Statement statement8 = new Sequence(
+                new Declaration(INT, new Var("i")),
+                new Declaration(
+                        INT,
+                        new Var("j"),
+                        new Assignment(
+                                new Var("i"),
+                                new OperatorExpression(
+                                        Operator.DIV,
+                                        new IntLiteral(8),
+                                        new Assignment(
+                                                new Var("i"),
+                                                new IntLiteral(4)
+                                        )
+                                )
+                        )
+                )
+        );
+        printTypeEvaluate(statement8);
+
+        Statement statement9 = new Sequence(
+                new Declaration(INT, new Var("i")),
+                new Declaration(
+                        INT,
+                        new Var("j"),
+                        new Assignment(
+                                new Var("i"),
+                                new OperatorExpression(
+                                        Operator.MOD,
+                                        new IntLiteral(17),
+                                        new Assignment(
+                                                new Var("i"),
+                                                new IntLiteral(5)
+                                        )
+                                )
+                        )
+                )
+        );
+        printTypeEvaluate(statement9);
     }
 
 }
