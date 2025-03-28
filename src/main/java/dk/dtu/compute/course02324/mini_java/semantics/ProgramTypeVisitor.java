@@ -124,9 +124,10 @@ public class ProgramTypeVisitor extends ProgramVisitor {
 
     @Override
     public void visit(PrintStatement printStatement) {
+        // For print statements, we just need to type check the expression
+        // The string literal is already typed as String
         if (printStatement.expression != null) {
-            VisitCoordinator coordinator = new VisitCoordinator(this);
-            coordinator.visit(printStatement.expression);
+            visit(printStatement.expression);
         }
     }
 
