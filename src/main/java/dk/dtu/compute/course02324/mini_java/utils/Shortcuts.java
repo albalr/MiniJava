@@ -39,4 +39,8 @@ public class Shortcuts {
         return new Sequence(statements);
     }
 
+    final public static PrintStatement PrintStatement(String message, Expression expression) {
+        return new PrintStatement(message, expression);
+    }
+
 }
