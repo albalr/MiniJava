@@ -43,7 +43,7 @@ public class VisitCoordinator {
         assignment.accept(visitor);
     }
 
-    private void visit(Expression expression) {
+    public void visit(Expression expression) {
         if (expression instanceof Literal) {
             visit((Literal) expression);
         } else if (expression instanceof Assignment) {
