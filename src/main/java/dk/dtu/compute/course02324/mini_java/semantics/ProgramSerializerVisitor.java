@@ -105,6 +105,15 @@ public class ProgramSerializerVisitor extends ProgramVisitor  {
         return result;
     }
 
+    @Override
+    public void visit(PrintStatement printStatement) {
+        result = "print(";
+        result += printStatement.message;
+        result += expessionRepresentations.get(printStatement.expression);
+        result += ")"; 
+        statementRepresentations.put(printStatement, result);
+    }
+
     public String result() {
         return result;
     }

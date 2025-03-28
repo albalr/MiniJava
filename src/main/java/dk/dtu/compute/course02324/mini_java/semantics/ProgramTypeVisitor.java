@@ -122,4 +122,8 @@ public class ProgramTypeVisitor extends ProgramVisitor {
         }
     }
 
+    @Override
+    public void visit(PrintStatement printStatement) {
+        problems.add("Expression in print statement has no type.");
+    }
 }
