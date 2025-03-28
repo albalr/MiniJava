@@ -182,9 +182,32 @@ public class MiniJavaRun {
 
         printTypeEvaluate(statement5);
 
-        System.out.println("And now some syntactially wrong examples (crashing) when building statement!");
+        // System.out.println("And now some syntactially wrong examples (crashing) when building statement!");
 
-        Statement statement6 = new Sequence(
+        // Statement statement6 = new Sequence(
+        //         new Declaration(INT, new Var("i")),
+        //         new Declaration(
+        //                 INT,
+        //                 new Var("j"),
+        //                 new Assignment(
+        //                         new Var("i"),
+        //                         new OperatorExpression(
+        //                                 PLUS2,
+        //                                 new IntLiteral(2),
+        //                                 new Assignment(
+        //                                         new Var("i"),
+        //                                         new FloatLiteral(3)),
+        //                                 new FloatLiteral(3.5f)
+        //                                 ))
+        //         )
+        // );
+        //
+        // printTypeEvaluate(statement6);
+
+        // SELF-MADE
+        
+        
+        Statement statement7 = new Sequence(
                 new Declaration(INT, new Var("i")),
                 new Declaration(
                         INT,
@@ -192,15 +215,17 @@ public class MiniJavaRun {
                         new Assignment(
                                 new Var("i"),
                                 new OperatorExpression(
-                                        PLUS2,
-                                        new IntLiteral(2),
+                                        Operator.PLUS2,
+                                        new IntLiteral(8),
                                         new Assignment(
                                                 new Var("i"),
-                                                new FloatLiteral(3)),
-                                        new FloatLiteral(3.5f)
-                                        ))
+                                                new IntLiteral(4)
+                                        )
+                                )
+                        )
                 )
         );
+        printTypeEvaluate(statement7);
     }
 
 }
