@@ -34,7 +34,7 @@ public class ProgramEvaluatorVisitor extends ProgramVisitor {
     private Function<List<Number>,Number> minus1float =
             args -> { float arg = args.get(0).floatValue();
                       return -arg; };
-
+    
     // BINARIES
     // plus2
     private Function<List<Number>,Number> plus2int =
@@ -69,6 +69,7 @@ public class ProgramEvaluatorVisitor extends ProgramVisitor {
                       int arg2 = args.get(1).intValue();
                       if (arg2 == 0) throw new ArithmeticException("Division by zero");
                       return arg1 / arg2; };
+
     private Function<List<Number>,Number> divfloat =
             args -> { float arg1 = args.get(0).floatValue();
                       float arg2 = args.get(1).floatValue();
@@ -80,6 +81,7 @@ public class ProgramEvaluatorVisitor extends ProgramVisitor {
                       int arg2 = args.get(1).intValue();
                       if (arg2 == 0) throw new ArithmeticException("Modulo by zero");
                       return arg1 % arg2; };
+
     private Function<List<Number>,Number> modfloat =
             args -> { float arg1 = args.get(0).floatValue();
                       float arg2 = args.get(1).floatValue();
@@ -187,14 +189,5 @@ public class ProgramEvaluatorVisitor extends ProgramVisitor {
         values.put(operatorExpression, result);
     }
 
-    @Override
-    public void visit(PrintStatement printStatement) {
-        // Get the value of the expression
-        Number value = values.get(printStatement.expression);
-        if (value == null) {
-            throw new RuntimeException("Value of expression does not exist");
-        }
-        // Print the message followed by the value
-        System.out.println(printStatement.message + value);
-    }
+
 }
