@@ -179,6 +179,32 @@ public class TestMiniJava{
         }
     }
 
+    @Test
+    public void testPrintStatement() {
+        // Test valid print statements with different expression types
+        Statement validStatement = new Sequence(
+                new Declaration(INT, new Var("i")),
+                new Assignment(new Var("i"), new IntLiteral(42)),
+                new PrintStatement("Value of i: ", new Var("i")),
+                new PrintStatement("Literal value: ", new IntLiteral(123)),
+                new PrintStatement("Float value: ", new FloatLiteral(3.14f)),
+                new PrintStatement("Expression value: ", new OperatorExpression(PLUS2, new IntLiteral(5), new IntLiteral(3)))
+        );
 
+        tvc.visit(validStatement);
+        if (!ptv.problems.isEmpty()) {
+            fail("The type visitor detected typing problems in valid print statements!");
+        }
+
+        // Test invalid print statement with undefined variable
+        Statement invalidStatement = new Sequence(
+                new PrintStatement("Undefined variable: ", new Var("x"))
+        );
+
+        tvc.visit(invalidStatement);
+        if (ptv.problems.isEmpty()) {
+            fail("The type visitor did not detect the undefined variable in print statement!");
+        }
+    }
 
 }
