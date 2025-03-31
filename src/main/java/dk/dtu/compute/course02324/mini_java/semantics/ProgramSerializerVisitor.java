@@ -7,120 +7,147 @@ import java.util.Map;
 
 public class ProgramSerializerVisitor extends ProgramVisitor  {
 
-    private String result = "";
+    private StringBuilder result = new StringBuilder();
 
-    private Map<Statement, String> statementRepresentations = new HashMap<>();
+    private int indentLevel = 0;
 
-    private Map<Expression, String> expessionRepresentations = new HashMap<>();
+    final private String INDENT = "  ";
+
+    private String addIndentation() {
+        String indent = "";
+        for (int i=0; i < indentLevel; i++) {
+            result.append(INDENT);
+        }
+        return indent;
+    }
+
+
+    public void visit(Statement statement) {
+        statement.accept(this);
+    }
 
     @Override
     public void visit(Sequence sequence) {
-        result = "";
         for (Statement statement: sequence.statements) {
-            result += statementRepresentations.get(statement) + System.lineSeparator();
+            // Takes care of proper indentation of substatements
+            addIndentation();
+
+            // Recursively deals with representation of substatement
+            statement.accept(this);
+
+            // The following is just a minor detail:
+            // Making sure that while loops do not end with a semicolon
+            if (statement instanceof WhileLoop) {
+                result.append(System.lineSeparator());
+            } else {
+                result.append(";" + System.lineSeparator());
+            }
         }
-        statementRepresentations.put(sequence, result);
     }
 
     @Override
     public void visit(Declaration declaration) {
-        result = declaration.type.getName() + " " + declaration.variable.name;
-        if (declaration.expression == null) {
-            result += ";";
-        } else {
-            result += " = " + expessionRepresentations.get(declaration.expression) + ";";
+        result.append(declaration.type.getName() + " " + declaration.variable.name);
+        if (declaration.expression != null) {
+            result.append(" = ");
+            declaration.expression.accept(this);
         }
-        statementRepresentations.put(declaration, result);
+    }
+
+    @Override
+    public void visit(PrintStatement printStatement) {
+        result.append("System.out.println(\"" + printStatement.prefix + "\"");
+        if (printStatement.expression != null) {
+            result.append(" + ");
+            printStatement.expression.accept(this);
+        }
+        result.append(")");
+    }
+
+    @Override
+    public void visit(WhileLoop whileLoop) {
+        result.append("while ( ");
+        whileLoop.expression.accept(this);
+        result.append(" >= 0 ) {" + System.lineSeparator());
+        indentLevel++;
+        whileLoop.statement.accept(this);
+        indentLevel--;
+        addIndentation();
+        result.append("}");
     }
 
     @Override
     public void visit(Assignment assignment) {
-        result = assignment.variable.name  + " = " + expessionRepresentations.get(assignment.expression);
-        statementRepresentations.put(assignment, result);
-        expessionRepresentations.put(assignment, result);
+        result.append(assignment.variable.name  + " = ");
+        assignment.expression.accept(this);
     }
 
     @Override
     public void visit(Literal literal) {
-        result = "";
         if (literal instanceof IntLiteral) {
-            result += ((IntLiteral) literal).literal;
+            result.append(((IntLiteral) literal).literal);
         } else if (literal instanceof FloatLiteral) {
-            result += ((FloatLiteral) literal).literal + "f";
+            result.append(((FloatLiteral) literal).literal + "f");
         } else {
             assert false;
         }
-        expessionRepresentations.put(literal, result);
     }
 
     @Override
     public void visit(Var var) {
-        result = var.name;
-        expessionRepresentations.put(var, result);
+        result.append(var.name);
     }
 
     @Override
     public void visit(OperatorExpression operatorExpression) {
         if (operatorExpression.operands.size() == 0) {
-            result = operatorExpression.operator.getName() +"()";
+            result.append(operatorExpression.operator.getName() +"()");
         } else if (operatorExpression.operands.size() == 1) {
-            result = operatorExpression.operator.getName() + " " +
-                    expessionRepresentations.get(operatorExpression.operands.getFirst());
+            result.append(operatorExpression.operator.getName() + " ");
+            operatorExpression.operands.getFirst().accept(this);
         } else if (operatorExpression.operands.size() == 2) {
-            result = operandToString(operatorExpression.operator, operatorExpression.operands.getFirst(),0) + " " +
-                    operatorExpression.operator.getName() + " " +
-                    operandToString(operatorExpression.operator, operatorExpression.operands.getLast(), 1);
+            operandToString(operatorExpression.operator, operatorExpression.operands.getFirst(),0);
+            result.append(" " + operatorExpression.operator.getName() + " ");
+            operandToString(operatorExpression.operator, operatorExpression.operands.getLast(), 1);
         } else {
-            result = operatorExpression.operator.getName() + "(";
+            result.append(operatorExpression.operator.getName() + "(");
             boolean first = true;
             for (Expression operand : operatorExpression.operands) {
                 if (!first) {
-                    result += ", ";
+                    result.append(", ");
                 } else {
                     first = false;
                 }
-                result += expessionRepresentations.get(operand);
+                operand.accept(this);
             }
-            result += ")";
+            result.append(")");
         }
-        expessionRepresentations.put(operatorExpression, result);
     }
 
-    @Override
-    public void visit(PrintStatement printStatement) {
-        result = "print(\"" + printStatement.message + "\", " + expessionRepresentations.get(printStatement.expression) + ")";
-        statementRepresentations.put(printStatement, result);
-    }
-
-    private String operandToString(Operator operator, Expression expression, int number) {
-        String result = expessionRepresentations.get(expression);
+    private void operandToString(Operator operator, Expression expression, int number) {
         if (expression instanceof OperatorExpression) {
             OperatorExpression operatorExpression = (OperatorExpression) expression;
             if (operatorExpression.operator.precedence > operator.precedence ||
                     (operatorExpression.operator.precedence == operator.precedence &&
                             ((operator.associativity == Associativity.LtR && number == 0) ||
                                     (operator.associativity == Associativity.RtL && number == 1)))) {
-                return result;
+                expression.accept(this);
             } else {
-                return "( " + result + " )";
+                result.append("( ");
+                expression.accept(this);
+                result.append(" )");
             }
         } else if (expression instanceof Assignment) {
-            return "( " + result + " )";
+            result.append("( ");
+            expression.accept(this);
+            result.append(" )");
+        } else {
+            expression.accept(this);
         }
-
-        return result;
-    }
-
-    @Override
-    public void visit(PrintStatement printStatement) {
-        result = "print(";
-        result += printStatement.message;
-        result += expessionRepresentations.get(printStatement.expression);
-        result += ")"; 
-        statementRepresentations.put(printStatement, result);
     }
 
     public String result() {
-        return result;
+        return result.toString();
     }
+
 }

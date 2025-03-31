@@ -12,5 +12,5 @@ public class FloatLiteral implements Literal {
     public String toString() {
         return "" + literal;
     }
-    
+
 }

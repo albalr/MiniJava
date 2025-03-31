@@ -3,15 +3,15 @@ package dk.dtu.compute.course02324.mini_java.model;
 import dk.dtu.compute.course02324.mini_java.semantics.ProgramVisitor;
 import org.jetbrains.annotations.NotNull;
 
-public class PrintStatement implements Statement {
-
-    final public String prefix;
+public class WhileLoop implements Statement {
 
     final public Expression expression;
 
-    public PrintStatement(@NotNull String prefix, @NotNull Expression expression) {
-        this.prefix = prefix;
+    final public Statement statement;
+
+    public WhileLoop(@NotNull Expression expression, @NotNull Statement statement) {
         this.expression = expression;
+        this.statement = statement;
     }
 
     @Override

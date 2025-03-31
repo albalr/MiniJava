@@ -8,6 +8,10 @@ public abstract class ProgramVisitor {
 
     abstract public void visit(Declaration declaration);
 
+    abstract public void visit(PrintStatement declaration);
+
+    abstract public void visit(WhileLoop whileLoop);
+
     abstract public void visit(Assignment assignment);
 
     abstract public void visit(Literal literal);
@@ -15,7 +19,5 @@ public abstract class ProgramVisitor {
     abstract public void visit(Var var);
 
     abstract public void visit(OperatorExpression operatorExpression);
-
-    abstract public void visit(PrintStatement printStatement);
 
 }

@@ -1,6 +1,7 @@
 package dk.dtu.compute.course02324.mini_java.model;
 
 import dk.dtu.compute.course02324.mini_java.semantics.ProgramVisitor;
+import org.jetbrains.annotations.NotNull;
 
 public class Declaration implements Statement {
 
@@ -10,7 +11,7 @@ public class Declaration implements Statement {
 
     public final Expression expression;
 
-    public Declaration(Type type, Var variable, Expression expression) {
+    public Declaration(@NotNull Type type, @NotNull Var variable, Expression expression) {
         this.type = type;
         this.variable = variable;
         this.expression = expression;
