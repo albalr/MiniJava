@@ -10,7 +10,7 @@ public enum Operator {
     MINUS2("-", 2, 11, Associativity.LtR),
     MULT("*", 2, 12, Associativity.LtR),
     DIV("/", 2, 12, Associativity.LtR),
-    MOD("%", 2, 12, Associativity.LtR);
+    MOD("%", 2, 12, Associativity.LtR);;
 
     private String name;
 
@@ -51,5 +51,4 @@ public enum Operator {
     public String toString() {
         return getName();
     }
-
 }

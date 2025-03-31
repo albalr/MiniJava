@@ -21,5 +21,4 @@ public enum TypeKeyword {
     public String toString() {
         return name;
     }
-
 }

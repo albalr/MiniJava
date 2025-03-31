@@ -12,11 +12,13 @@ public class MiniJavaRun {
         System.out.println("Result by our program:");
 
         ProgramSerializerVisitor ps = new ProgramSerializerVisitor();
-        ps.visit(statement);
+        VisitCoordinator vc = new VisitCoordinator(ps);
+        vc.visit(statement);
         System.out.println(ps.result());
 
         ProgramTypeVisitor pv = new ProgramTypeVisitor();
-        pv.visit(statement);
+        vc = new VisitCoordinator(pv);
+        vc.visit(statement);
 
         if (!pv.problems.isEmpty()) {
             System.out.println("There were some problems in the statement:");
@@ -24,118 +26,28 @@ public class MiniJavaRun {
                 System.out.println(problem);
             }
         } else {
-            System.out.println("Expression type checks correctly. Variable types:");
+            System.out.println("Expression type checks correctly");
             for (Var var: pv.variables) {
                 System.out.println(pv.typeMapping.get(var).getName() + " " + var.name + ";");
             }
 
-            System.out.println("Program  starting. Output:");
-
-            ProgramExecutorVisitor pev = new ProgramExecutorVisitor(pv);
-            pev.visit(statement);
-
-            System.out.println("Program finished!");
-
-            System.out.println("Values of variables in the end");
+            ProgramEvaluatorVisitor pev = new ProgramEvaluatorVisitor(pv);
+            vc = new VisitCoordinator(pev);
+            vc.visit(statement);
 
             for (Var var: pv.variables) {
                 System.out.println(var.name + " = " + pev.values.get(var));
             }
         }
         System.out.println("------------------------------");
-        System.out.println();
     }
 
     public static void main(String... args) {
-
         System.out.println("Result provided by Java");
         int i;
-        int j = i = 2 + (i = 3);
+        int j = i = 2 + (i = 3) ;
         System.out.println("i = " + i);
         System.out.println("j = " + j);
-        System.out.println();
-
-        Statement statement0 = Sequence(
-                Declaration(INT, Var("i")),
-                Declaration(
-                        INT,
-                        Var("j"),
-                        Assignment(
-                                Var("i"),
-                                OperatorExpression(
-                                        PLUS2,
-                                        Literal(2),
-                                        Assignment(
-                                                Var("i"),
-                                                Literal(3)
-                                        )
-                                )
-                        )
-                )
-        );
-
-        printTypeEvaluate(statement0);
-
-        System.out.println("Java evaluates - + -1 + 7 - 1 to " + (- + -1 + 7 - 1));
-
-        Sequence printStatements = Sequence(
-            PrintStatement(" - + -1 + 7 - 1: ",
-                OperatorExpression(MINUS2,
-                    OperatorExpression(PLUS2,
-                        OperatorExpression(MINUS1,
-                            OperatorExpression(PLUS1,
-                               Literal(-1)
-                            )
-                        ),
-                        Literal(7)
-                    ),
-                    Literal(1)
-                )
-            )
-        );
-
-        printTypeEvaluate(printStatements);
-
-        Statement whileLoops =  Sequence(
-            Declaration(INT, Var("i"), Literal(5)),
-            WhileLoop(
-                Var("i"),
-                Sequence(
-                    Declaration(INT, Var("j"), Var("i")),
-                    WhileLoop(
-                        Var("j"),
-                        Sequence(
-                            Assignment(
-                                Var("j"),
-                                OperatorExpression(MINUS2,
-                                    Var("j"),
-                                    Literal(1)
-                                )
-                            ),
-                            PrintStatement(" i: ", Var("i")),
-                            PrintStatement(" j: ", Var("j"))
-                        )
-                    ),
-                    Assignment(
-                        Var("i"),
-                        OperatorExpression(MINUS2,
-                            Var("i"),
-                            Literal(1)
-                        )
-                    )
-                )
-            )
-        );
-
-        printTypeEvaluate(whileLoops);
-
-
-        System.out.println("Result provided by Java");
-        int i2;
-        int j2 = i2 = 2 + (i2 = 3);
-        j2 = 2 * j2;
-        System.out.println("i = " + i2);
-        System.out.println("j = " + j2);
         System.out.println();
 
         Statement statement = Sequence(
@@ -154,21 +66,10 @@ public class MiniJavaRun {
                                         )
                                 )
                         )
-                ),
-                Assignment(
-                        Var("j"),
-                        OperatorExpression(
-                                MULT,
-                                Literal(2),
-                                Var("j")
-                        )
-                ),
-                PrintStatement("result i = ", Var("i")),
-                PrintStatement("result j = ", Var("j"))
+                )
         );
 
         printTypeEvaluate(statement);
-
 
         System.out.println("Result provided by Java");
         float ii;
@@ -176,6 +77,7 @@ public class MiniJavaRun {
         System.out.println("i = " + ii);
         System.out.println("j = " + jj);
         System.out.println();
+
 
         // Note that from here we do not make (much) use of the Shorthands.
         // See what difference it makes.
@@ -280,9 +182,32 @@ public class MiniJavaRun {
 
         printTypeEvaluate(statement5);
 
-        System.out.println("And now some syntactially wrong examples (crashing) when building statement!");
+        // System.out.println("And now some syntactially wrong examples (crashing) when building statement!");
 
-        Statement statement6 = new Sequence(
+        // Statement statement6 = new Sequence(
+        //         new Declaration(INT, new Var("i")),
+        //         new Declaration(
+        //                 INT,
+        //                 new Var("j"),
+        //                 new Assignment(
+        //                         new Var("i"),
+        //                         new OperatorExpression(
+        //                                 PLUS2,
+        //                                 new IntLiteral(2),
+        //                                 new Assignment(
+        //                                         new Var("i"),
+        //                                         new FloatLiteral(3)),
+        //                                 new FloatLiteral(3.5f)
+        //                                 ))
+        //         )
+        // );
+        //
+        // printTypeEvaluate(statement6);
+
+        // SELF-MADE
+        
+        
+        Statement statement7 = new Sequence(
                 new Declaration(INT, new Var("i")),
                 new Declaration(
                         INT,
@@ -290,15 +215,57 @@ public class MiniJavaRun {
                         new Assignment(
                                 new Var("i"),
                                 new OperatorExpression(
-                                        PLUS2,
-                                        new IntLiteral(2),
+                                        Operator.PLUS2,
+                                        new IntLiteral(8),
                                         new Assignment(
                                                 new Var("i"),
-                                                new FloatLiteral(3)),
-                                        new FloatLiteral(3.5f)
-                                        ))
+                                                new IntLiteral(4)
+                                        )
+                                )
+                        )
                 )
         );
+        printTypeEvaluate(statement7);
+
+        Statement statement8 = new Sequence(
+                new Declaration(INT, new Var("i")),
+                new Declaration(
+                        INT,
+                        new Var("j"),
+                        new Assignment(
+                                new Var("i"),
+                                new OperatorExpression(
+                                        Operator.DIV,
+                                        new IntLiteral(8),
+                                        new Assignment(
+                                                new Var("i"),
+                                                new IntLiteral(4)
+                                        )
+                                )
+                        )
+                )
+        );
+        printTypeEvaluate(statement8);
+
+        Statement statement9 = new Sequence(
+                new Declaration(INT, new Var("i")),
+                new Declaration(
+                        INT,
+                        new Var("j"),
+                        new Assignment(
+                                new Var("i"),
+                                new OperatorExpression(
+                                        Operator.MOD,
+                                        new IntLiteral(17),
+                                        new Assignment(
+                                                new Var("i"),
+                                                new IntLiteral(5)
+                                        )
+                                )
+                        )
+                )
+        );
+        printTypeEvaluate(statement9);
     }
 
 }

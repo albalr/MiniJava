@@ -13,17 +13,14 @@ public class ProgramTypeVisitor extends ProgramVisitor {
     /**
      * This is a very simple map of operators to their possible types.
      * Note the typing of an operator is very simplistic for now; the
-     * types of all operands and the result of the operation are the same.<p>
-     *
-     * TODO Assignment 6a: This map does contain only some few examples of types
-     *      on which the operators should work. In Assignment 6a, this list must
-     *      be complete for all (primmitive) types of Mini Java on which these
-     *      operators make sense.
+     * types of all operands and the result of te operation are the same.
      */
     final private Map<Operator,List<Type>> operatorTypes = Map.ofEntries(
             entry(PLUS2, List.of(INT, FLOAT)),
             entry(MINUS2, List.of(INT, FLOAT)),
-            entry(MULT, List.of(INT, FLOAT)));
+            entry(MULT, List.of(INT, FLOAT)),
+            entry(DIV, List.of(INT, FLOAT)),
+            entry(MOD, List.of(INT)));
 
     final public Map<Expression, Type> typeMapping = new HashMap<>();
 
@@ -31,22 +28,13 @@ public class ProgramTypeVisitor extends ProgramVisitor {
 
     final public List<String> problems = new ArrayList<>();
 
-    public void visit(Statement statement) {
-        statement.accept(this);
-    }
-
     @Override
     public void visit(Sequence sequence) {
-        for (Statement substatement: sequence.statements) {
-            substatement.accept(this);
-        }
+        // nothing to do for Sequence for type checkin
     }
 
     @Override
     public void visit(Declaration declaration) {
-        if (declaration.expression != null) {
-            declaration.expression.accept(this);
-        }
         Var variable = declaration.variable;
         if (variables.contains(variable)) {
             problems.add("Variable " + variable.name + " declared more than once.");
@@ -55,43 +43,32 @@ public class ProgramTypeVisitor extends ProgramVisitor {
             typeMapping.put(variable, declaration.type);
             if (declaration.expression != null) {
                 Type expressionType = typeMapping.get(declaration.expression);
-                if (!declaration.type.equals(expressionType)) {
-                    problems.add("Type mismatch for declaration of " +
-                            declaration.type.getName() + " " + declaration.variable.name +
-                            ": expression is type " + expressionType.getName() + ".");
+                if (expressionType == null) {
+                    problems.add("Expression in declaration of " +
+                            declaration.type + " " + declaration.variable.name +
+                            " has no type.");
+                } else if (!declaration.type.equals(expressionType)) {
+                    problems.add("Expression in declaration of " +
+                            declaration.type + " " + declaration.variable.name +
+                            " hass wrong type: " + expressionType + ".");
                 }
             }
         }
     }
 
     @Override
-    public void visit(PrintStatement printStatement) {
-        printStatement.expression.accept(this);
-
-        // Here, we do not need to do anything except for recursively
-        // making sure that the PrintStatements expression is valid
-        // (which the above accept actually does).
-    }
-
-    public void visit(WhileLoop whileLoop) {
-        whileLoop.expression.accept(this);
-
-        /* TODO Assignment 6b: Here some code most be implemented for
-                checking that the expression is of type integer. If not,
-                the code must add a problem to the problem list.
-         */
-
-        whileLoop.statement.accept(this);
-    }
-
-    @Override
     public void visit(Assignment assignment) {
-        assignment.expression.accept(this);
         if (variables.contains(assignment.variable)) {
             Type type = typeMapping.get(assignment.variable);
-            if (!type.equals(typeMapping.get(assignment.expression))) {
-                problems.add("Type mismatch for assignment to variable " +
-                        assignment.variable.name + " of type " + type.getName() + ".");
+            Type expressionType = typeMapping.get(assignment.expression);
+            if (expressionType == null) {
+                problems.add("Expression in assignment to variable " +
+                        assignment.variable.name + " has no type.");
+            } else if (!type.equals(typeMapping.get(assignment.expression))) {
+                problems.add("Type mismatch in assignment to variable " +
+                        type + " " + assignment.variable.name + ": Expression is of type " +
+                        expressionType + "."
+                );
             } else {
                 typeMapping.put(assignment, type);
             }
@@ -123,15 +100,14 @@ public class ProgramTypeVisitor extends ProgramVisitor {
     public void visit(OperatorExpression operatorExpression) {
         Type operandType = null;
         for (Expression subexpression: operatorExpression.operands) {
-            subexpression.accept(this);
             Type subexpressionType = typeMapping.get(subexpression);
             if (subexpressionType == null) {
-                problems.add("A subexpression of " + operatorExpression.operator.getName() + " does not have a type.");
+                problems.add("Subexpression of " + operatorExpression.operator + " does not have a type.");
             }
             if (operandType == null) {
                 operandType = subexpressionType;
             } else if (!operandType.equals(subexpressionType)) {
-                problems.add("Subexpressions of operator do mot match for " + operatorExpression.operator.getName() + ".");
+                problems.add("Subexpressions type mismatch in " + operatorExpression.operator + ".");
             }
         }
         if (operandType != null) {
@@ -142,8 +118,12 @@ public class ProgramTypeVisitor extends ProgramVisitor {
                 problems.add("Operator does not support the type of its operands. Operator is " + operatorExpression.operator + " and operand type is " + operandType);
             }
         } else {
-            problems.add("Subexpression(s) of operand do not have a type: Operator " + operatorExpression.operator);
+            problems.add("Expressions does not have a type: Operator " + operatorExpression.operator);
         }
     }
 
+    @Override
+    public void visit(PrintStatement printStatement) {
+        problems.add("Expression in print statement has no type.");
+    }
 }

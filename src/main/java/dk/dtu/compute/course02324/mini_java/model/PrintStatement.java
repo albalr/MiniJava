@@ -1,16 +1,13 @@
 package dk.dtu.compute.course02324.mini_java.model;
 
 import dk.dtu.compute.course02324.mini_java.semantics.ProgramVisitor;
-import org.jetbrains.annotations.NotNull;
 
-public class PrintStatement implements Statement {
+public class PrintStatement implements SimpleStatement {
+    public final String message;
+    public final Expression expression;
 
-    final public String prefix;
-
-    final public Expression expression;
-
-    public PrintStatement(@NotNull String prefix, @NotNull Expression expression) {
-        this.prefix = prefix;
+    public PrintStatement(String message, Expression expression) {
+        this.message = message;
         this.expression = expression;
     }
 
@@ -18,5 +15,4 @@ public class PrintStatement implements Statement {
     public void accept(ProgramVisitor visitor) {
         visitor.visit(this);
     }
-
-}
+} 

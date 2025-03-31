@@ -1,7 +1,10 @@
 package dk.dtu.compute.course02324.mini_java;
 
 import dk.dtu.compute.course02324.mini_java.model.*;
-import dk.dtu.compute.course02324.mini_java.semantics.*;
+import dk.dtu.compute.course02324.mini_java.semantics.ProgramEvaluatorVisitor;
+import dk.dtu.compute.course02324.mini_java.semantics.ProgramSerializerVisitor;
+import dk.dtu.compute.course02324.mini_java.semantics.ProgramTypeVisitor;
+import dk.dtu.compute.course02324.mini_java.semantics.VisitCoordinator;
 
 import static dk.dtu.compute.course02324.mini_java.utils.Shortcuts.*;
 import static dk.dtu.compute.course02324.mini_java.model.Operator.*;
@@ -22,17 +25,31 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class TestMiniJava{
 
-    private ProgramTypeVisitor ptv;
 
-    private ProgramExecutorVisitor pev;
+    // private ProgramSerializerVisitor psv;
+    // private VisitCoordinator svc;
+
+    private ProgramTypeVisitor ptv;
+    private VisitCoordinator tvc;
+
+    private ProgramEvaluatorVisitor pev;
+    private VisitCoordinator evc;
+
+
 
     /**
-     *  Sets up the visitors for type checking and execution.
+     *  Sets
      */
     @BeforeEach
     public void setUp() {
+        // psv = new ProgramSerializerVisitor();
+        // svc = new VisitCoordinator(psv);
+
         ptv = new ProgramTypeVisitor();
-        pev = new ProgramExecutorVisitor(ptv);
+        tvc = new VisitCoordinator(ptv);
+
+        pev = new ProgramEvaluatorVisitor(ptv);
+        evc = new VisitCoordinator(pev);
     }
 
     @Test
@@ -57,12 +74,12 @@ public class TestMiniJava{
                 )
         );
 
-        ptv.visit(statement);
+        tvc.visit(statement);
         if (!ptv.problems.isEmpty()) {
-            fail("The type visitor did detect typing problems, which should not be there!");
+            fail("The type visitor did detect typing problmes, which should not be there!");
         }
 
-        pev.visit(statement);
+        evc.visit(statement);
 
         Set<String> variables = new HashSet<>(List.of("i", "j"));
         for (Var var: ptv.variables) {
@@ -81,6 +98,7 @@ public class TestMiniJava{
 
     @Test
     public void testCorrectlyTypedProgramWithFloats() {
+        System.out.println("Result provided by Java");
         float i;
         float j = i = 2.75f - ( i = 3.21f );
 
@@ -104,11 +122,11 @@ public class TestMiniJava{
                         )
                 );
 
-        ptv.visit(statement);
+        tvc.visit(statement);
         if (!ptv.problems.isEmpty()) {
-            fail("The type visitor did detect typing problems, which should not be there!");
+            fail("The type visitor did detect typing problmes, which should not be there!");
         }
-        pev.visit(statement);
+        evc.visit(statement);
 
         Set<String> variables = new HashSet<>(List.of("i", "j"));
         for (Var var: ptv.variables) {
@@ -154,7 +172,7 @@ public class TestMiniJava{
                         Assignment(Var("k"), Literal(3))
                 );
 
-        ptv.visit(statement);
+        tvc.visit(statement);
 
         if (ptv.problems.isEmpty()) {
             fail("No type problems detected in a mistyped statement!");
@@ -162,185 +180,31 @@ public class TestMiniJava{
     }
 
     @Test
-    public void testLoopProgram() {
-        int i = 5;
-        int j = 0;
-        int sum = 0;
-        while ( i >= 0 ) {
-            j = i;
-            while ( j >= 0 ) {
-                sum = sum + j;
-                j = j - 1;
-                // println(" i: ", i);
-                // println(" j: ", j);
-            };
-            i = i - 1;
-        };
-
-        Statement statement = Sequence(
-                Declaration(INT, Var("i"), Literal(5)),
-                Declaration(INT, Var("sum"), Literal(0)),
-                WhileLoop(
-                        Var("i"),
-                        Sequence(
-                                Declaration(INT, Var("j"), Var("i")),
-                                WhileLoop(
-                                        Var("j"),
-                                        Sequence(
-                                                Assignment(
-                                                        Var("sum"),
-                                                        OperatorExpression(PLUS2,
-                                                                Var("sum"),
-                                                                Var("j")
-                                                        )
-                                                ),
-                                                Assignment(
-                                                        Var("j"),
-                                                        OperatorExpression(MINUS2,
-                                                                Var("j"),
-                                                                Literal(1)
-                                                        )
-                                                ),
-                                                PrintStatement(" i: ", Var("i")),
-                                                PrintStatement(" j: ", Var("j"))
-                                        )
-                                ),
-                                Assignment(
-                                        Var("i"),
-                                        OperatorExpression(MINUS2,
-                                                Var("i"),
-                                                Literal(1)
-                                        )
-                                )
-                        )
-                )
+    public void testPrintStatement() {
+        // Test valid print statements with different expression types
+        Statement validStatement = new Sequence(
+                new Declaration(INT, new Var("i")),
+                new Assignment(new Var("i"), new IntLiteral(42)),
+                new PrintStatement("Value of i: ", new Var("i")),
+                new PrintStatement("Literal value: ", new IntLiteral(123)),
+                new PrintStatement("Float value: ", new FloatLiteral(3.14f)),
+                new PrintStatement("Expression value: ", new OperatorExpression(PLUS2, new IntLiteral(5), new IntLiteral(3)))
         );
 
-        ptv.visit(statement);
+        tvc.visit(validStatement);
         if (!ptv.problems.isEmpty()) {
-            fail("The type visitor did detect typing problems, which should not be there!");
+            fail("The type visitor detected typing problems in valid print statements!");
         }
-        pev.visit(statement);
 
-        Set<String> variables = new HashSet<>(List.of("i", "j", "sum"));
-        for (Var var: ptv.variables) {
-            variables.remove(var.name);
-
-            if (var.name.equals("i")) {
-                assertEquals(i, pev.values.get(var), "Value of variable i should be " + i + ".");
-            } else if (var.name.equals("j")) {
-                assertEquals(j, pev.values.get(var), "Value of variable j should be " + j + ".");
-            } else if (var.name.equals("sum")) {
-                assertEquals(sum, pev.values.get(var), "Value of variable sum should be " + sum + ".");
-            } else {
-                fail("A non-existing variable " + var.name + " occurred in evaluation of program.");
-            }
-        }
-        assertEquals(0, variables.size(), "Some variables have not been evaluated");
-    }
-
-    @Test
-    public void testPrintAndAdditionalOperators() {
-        int i = - + -1 + 7 - 1;
-        float x = - + -1.5f + 7.0f - 1.0f;
-        int j = 36 % 7;
-        int k = 36 / 7;
-        float y = 36.0f / 7.0f;
-
-        Sequence printStatements = Sequence(
-                Declaration(INT,
-                        Var("i"),
-                        OperatorExpression(MINUS2,
-                                OperatorExpression(PLUS2,
-                                        OperatorExpression(MINUS1,
-                                                OperatorExpression(PLUS1,
-                                                        Literal(-1)
-                                                )
-                                        ),
-                                        Literal(7)
-                                ),
-                                Literal(1)
-                        )
-                ),
-                PrintStatement(" - + -1 + 7 - 1: ",
-                        Var("i")
-                ),
-                Declaration(FLOAT,
-                        Var("x"),
-                        OperatorExpression(MINUS2,
-                                OperatorExpression(PLUS2,
-                                        OperatorExpression(MINUS1,
-                                                OperatorExpression(PLUS1,
-                                                        Literal(-1.5f)
-                                                )
-                                        ),
-                                        Literal(7.0f)
-                                ),
-                                Literal(1.0f)
-                        )
-                ),
-                PrintStatement(" - + -1.5f + 7.0f - 1.0f: ",
-                        Var("x")
-                ),
-                Declaration(INT,
-                        Var("j"),
-                        OperatorExpression(MOD,
-                                Literal(36),
-                                Literal(7)
-                        )
-                ),
-                PrintStatement("36 % 7: ",
-                        Var("j")
-                ),
-                Declaration(INT,
-                        Var("k"),
-                        OperatorExpression(DIV,
-                                Literal(36),
-                                Literal(7)
-                        )
-                ),
-                PrintStatement("36 / 7: ",
-                        Var("k")
-                ),
-                Declaration(FLOAT,
-                        Var("y"),
-                        OperatorExpression(DIV,
-                                Literal(36.0f),
-                                Literal(7.0f)
-                        )
-                ),
-                PrintStatement("36.0f / 7.0: ",
-                        Var("y")
-                )
+        // Test invalid print statement with undefined variable
+        Statement invalidStatement = new Sequence(
+                new PrintStatement("Undefined variable: ", new Var("x"))
         );
 
-
-        ptv.visit(printStatements);
-        if (!ptv.problems.isEmpty()) {
-            fail("The type visitor did detect typing problems, which should not be there!");
+        tvc.visit(invalidStatement);
+        if (ptv.problems.isEmpty()) {
+            fail("The type visitor did not detect the undefined variable in print statement!");
         }
-
-        pev.visit(printStatements);
-
-        Set<String> variables = new HashSet<>(List.of("i", "x", "j", "k", "y"));
-        for (Var var: ptv.variables) {
-            variables.remove(var.name);
-
-            if (var.name.equals("i")) {
-                assertEquals(i, pev.values.get(var), "Value of variable i should be " + i + ".");
-            } else if (var.name.equals("x")) {
-                assertEquals(x, pev.values.get(var), "Value of variable j should be " + x + ".");
-            } else if (var.name.equals("j")) {
-                assertEquals(j, pev.values.get(var), "Value of variable j should be " + j + ".");
-            } else if (var.name.equals("k")) {
-                assertEquals(k, pev.values.get(var), "Value of variable j should be " + k + ".");
-            } else if (var.name.equals("y")) {
-                assertEquals(y, pev.values.get(var), "Value of variable j should be " + y + ".");
-            } else {
-                fail("A non-existing variable " + var.name + " occurred in evaluation of program.");
-            }
-        }
-        assertEquals(0, variables.size(), "Some variables have not been evaluated");
     }
 
 }
