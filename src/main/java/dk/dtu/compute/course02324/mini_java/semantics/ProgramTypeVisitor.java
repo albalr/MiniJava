@@ -122,4 +122,11 @@ public class ProgramTypeVisitor extends ProgramVisitor {
         }
     }
 
+    @Override
+    public void visit(PrintStatement printStatement) {
+        if (printStatement.expression instanceof Literal) {
+            visit((Literal) printStatement.expression);
+        }
+    }
+
 }

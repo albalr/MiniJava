@@ -189,5 +189,9 @@ public class ProgramEvaluatorVisitor extends ProgramVisitor {
         values.put(operatorExpression, result);
     }
 
-
+    @Override
+    public void visit(PrintStatement printStatement) {
+        Number value = values.get(printStatement.expression);
+        System.out.println(printStatement.message + ": " + value);
+    }
 }
